@@ -9,7 +9,8 @@ build:
 	mkdir ./build
 
 build/.build-image.log: build
-	docker build -t bakery-agent ./ &> $@
+	docker build -t bakery-agent ./ | tee -a /tmp/build-log
+	cp /tmp/build-log $@
 
 fmt:
 	docker run --rm -v $(PWD):/usr/src/bakery-agent bakery-agent go fmt
