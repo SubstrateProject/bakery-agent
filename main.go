@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/SubstrateProject/bakery-agent/sqs"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
