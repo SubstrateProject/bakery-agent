@@ -32,8 +32,8 @@ type QueueMinder struct {
 }
 
 
-func NewQM(aws *session.Session, queueName string) (QueueMinder, error) {
-	svc := sqs.New(aws)
+func NewQM(awssess *session.Session, queueName string) (QueueMinder, error) {
+	svc := sqs.New(awssess)
 	params := &sqs.GetQueueUrlInput{
 		QueueName:              aws.String(queueName), // Required
 	}
@@ -41,21 +41,21 @@ func NewQM(aws *session.Session, queueName string) (QueueMinder, error) {
 
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
-	return QueueMinder{
+	qm := QueueMinder{
 		AwsSession: aws,
 		SVC: svc,
 		URL: resp.QueueUrl,
 	}
+	return qm, nil
 }
 
 func (pqm *QueueMinder) sendMessage (body string, delay int, payload string) (*sqs.SendMessageOutput, error) {
 	params := &sqs.SendMessageInput{
     MessageBody:  aws.String(body), // Required
-    QueueUrl:     aws.String(pqm.URL), // Required
-    DelaySeconds: aws.Int64(ds),
+    QueueUrl:     aws.String(&pqm.URL), // Required
+    DelaySeconds: aws.Int64(delay),
     MessageAttributes: map[string]*sqs.MessageAttributeValue{
 			"Key": { // Required
 				DataType: aws.String("String"), // Required
@@ -84,5 +84,5 @@ func (pqm *QueueMinder) sendMessage (body string, delay int, payload string) (*s
 }
 
 func (pqm *QueueMinder) waitForMessage (signifier string, timeout int, pollrate int, totalpoll int) error {
-
+	return nil
 }
