@@ -5,9 +5,24 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	// "github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
+
+type SendInput struct {
+	QueueName string
+	Body string
+	Completed bool
+}
+
+func Send(params *SendInput) error {
+	sess, err := session.NewSession()
+	if err != nil {
+		log.Error(err)
+	}
+	qm := NewQM(sess, params.QueueName)
+
+}
 
 type QueueMinder struct {
 	AwsSession *session.Session
@@ -16,15 +31,15 @@ type QueueMinder struct {
 }
 
 
-func NewQM(aws *session.Session, queue_name string) (ProvisionQueueMinder, error) {
-	sqs := sqs.New(aws)
+func NewQM(aws *session.Session, queueName string) (QueueMinder, error) {
+	svc := sqs.New(aws)
 	params := &sqs.GetQueueUrlInput{
-    QueueName:              aws.String(queue_name), // Required
+		QueueName:              aws.String(queueName), // Required
 	}
 	resp, err := svc.GetQueueUrl(params)
 
 	if err != nil {
-    log.Error(err)
+		log.Error(err)
 		return
 	}
 
@@ -35,7 +50,7 @@ func NewQM(aws *session.Session, queue_name string) (ProvisionQueueMinder, error
 	}
 }
 
-func (pqm *ProvisionQueueMinder) sendMessage (body string, delay int, payload string, ) (*sqs.SendMessageOutput, error) {
+func (pqm *QueueMinder) sendMessage (body string, delay int, payload string, ) (*sqs.SendMessageOutput, error) {
 	params := &sqs.SendMessageInput{
     MessageBody:  aws.String(body), // Required
     QueueUrl:     aws.String(pqm.URL), // Required
@@ -67,6 +82,6 @@ func (pqm *ProvisionQueueMinder) sendMessage (body string, delay int, payload st
 
 }
 
-func (pqm *ProvisionQueueMinder) waitForMessage (signifier string, timeout int, pollrate int, totalpoll int) error {
+func (pqm *QueueMinder) waitForMessage (signifier string, timeout int, pollrate int, totalpoll int) error {
 
 }
