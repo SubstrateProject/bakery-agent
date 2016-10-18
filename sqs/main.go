@@ -18,10 +18,11 @@ type SendInput struct {
 func Send(params *SendInput) error {
 	sess, err := session.NewSession()
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 	qm := NewQM(sess, params.QueueName)
-
+	qm.sendMessage(params.Body, 1, "payload")
+	return nil
 }
 
 type QueueMinder struct {
@@ -39,18 +40,18 @@ func NewQM(aws *session.Session, queueName string) (QueueMinder, error) {
 	resp, err := svc.GetQueueUrl(params)
 
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 		return
 	}
 
 	return QueueMinder{
 		AwsSession: aws,
-		SVC: sqs,
+		SVC: svc,
 		URL: resp.QueueUrl,
 	}
 }
 
-func (pqm *QueueMinder) sendMessage (body string, delay int, payload string, ) (*sqs.SendMessageOutput, error) {
+func (pqm *QueueMinder) sendMessage (body string, delay int, payload string) (*sqs.SendMessageOutput, error) {
 	params := &sqs.SendMessageInput{
     MessageBody:  aws.String(body), // Required
     QueueUrl:     aws.String(pqm.URL), // Required
@@ -75,7 +76,7 @@ func (pqm *QueueMinder) sendMessage (body string, delay int, payload string, ) (
 
 	resp, err := pqm.SVC.SendMessage(params)
 	if err != nil {
-    log.Error(err)
+    log.Fatal(err)
 	}
 
 	return resp, nil
