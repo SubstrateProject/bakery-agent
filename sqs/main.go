@@ -49,7 +49,7 @@ func NewQM(awssess *session.Session, queueName string) (QueueMinder, error) {
 	qm := QueueMinder{
 		AwsSession: awssess,
 		SVC: svc,
-		URL: resp.QueueUrl,
+		URL: *resp.QueueUrl,
 	}
 	return qm, nil
 }
